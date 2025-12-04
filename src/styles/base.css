@@ -1,0 +1,160 @@
+/* ===== BASE & RESET ===== */
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Tema Escuro */
+.app-container.dark {
+  --bg-main: #111827;
+  --text-main: #facc15;
+  --bg-card: #1f2937;
+  --arena-bg: #0f172a;
+  --arena-border: #374151;
+  --player-color: #3b82f6;
+  --enemy-color: #ef4444;
+  --knife-color: #a78bfa;
+  --datacenter-color: #10b981;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+}
+
+/* Container Principal */
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s;
+  overflow: hidden;
+}
+
+/* ===== BOTÕES BASE ===== */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-start {
+  background-color: var(--player-color);
+  color: white;
+  margin-top: 1rem;
+  font-size: 1.2rem;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: 2px solid #60a5fa;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 25px rgba(96, 165, 250, 0.8),
+    0 0 40px rgba(59, 130, 246, 0.4);
+  border-color: #93c5fd;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+  border: 2px solid #4b5563;
+  color: #e5e7eb;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  border-color: #60a5fa;
+  color: #93c5fd;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.btn-back {
+  background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+  border: 2px solid #93c5fd;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  transition: all 0.3s;
+}
+
+.btn-back:hover {
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.6);
+  transform: translateY(-2px);
+}
+
+/* ===== ANIMAÇÕES BASE ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+  }
+  to {
+    text-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+  }
+}
+
+@keyframes glow-text {
+  from {
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+  }
+  to {
+    text-shadow:
+      0 0 30px rgba(250, 204, 21, 0.8),
+      0 0 50px rgba(250, 204, 21, 0.4);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
