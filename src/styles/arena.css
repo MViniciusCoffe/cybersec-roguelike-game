@@ -1,0 +1,151 @@
+/* ===== ARENA DO JOGO ===== */
+
+.game-arena-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--arena-bg);
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* ===== ENTIDADES ===== */
+
+.entity {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* Player */
+.player {
+  background-color: var(--player-color);
+  box-shadow: 0 0 10px var(--player-color);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+/* Inimigo */
+.enemy {
+  background-color: var(--enemy-color);
+  border-radius: 50%;
+  z-index: 5;
+  animation: glow-pulse 1.5s infinite alternate;
+}
+
+@keyframes glow-pulse {
+  from {
+    box-shadow: 0 0 10px var(--enemy-color);
+    opacity: 0.9;
+  }
+  to {
+    box-shadow:
+      0 0 25px var(--enemy-color),
+      0 0 10px var(--enemy-color) inset;
+    opacity: 1;
+  }
+}
+
+/* Dinheiro */
+.money-hud {
+  border-radius: 50%;
+}
+
+.money {
+  background: radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b);
+  border-radius: 50%;
+  box-shadow:
+    0 0 8px rgba(251, 191, 36, 0.8),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.2);
+  z-index: 10;
+  animation: money-glow 1s ease-in-out infinite;
+}
+
+@keyframes money-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px rgba(251, 191, 36, 0.8),
+      inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+      inset 1px 1px 3px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 15px rgba(251, 191, 36, 1),
+      inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+      inset 1px 1px 3px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Faca */
+.knife {
+  background: linear-gradient(
+    to bottom,
+    var(--knife-color) 0%,
+    var(--knife-color) 70%,
+    #64748b 70%,
+    #64748b 100%
+  );
+  box-shadow: 0 0 8px var(--knife-color);
+  border-radius: 2px;
+  z-index: 15;
+  transition: opacity 0.3s;
+  transform-origin: center center;
+  margin-left: -4px;
+  margin-top: -12.5px;
+}
+
+/* Data Center */
+.data-center {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  box-shadow:
+    0 0 20px var(--datacenter-color),
+    0 0 40px rgba(16, 185, 129, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  z-index: 5;
+  animation: datacenter-pulse 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  opacity: 0.9;
+}
+
+.data-center::before {
+  content: '🖥️';
+  position: absolute;
+  z-index: 6;
+  animation: rotate-slow 6s linear infinite;
+}
+
+@keyframes datacenter-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px var(--datacenter-color),
+      0 0 40px rgba(16, 185, 129, 0.4),
+      inset 0 0 20px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px var(--datacenter-color),
+      0 0 60px rgba(16, 185, 129, 0.6),
+      inset 0 0 30px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
