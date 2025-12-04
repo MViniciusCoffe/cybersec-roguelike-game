@@ -1,0 +1,211 @@
+/* ===== HUD - BARRA COMPACTA ESTILO ROGUELIKE ===== */
+
+.game-hud {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Indicador de Onda */
+.wave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.wave-indicator .wave-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wave-indicator .wave-number {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #60a5fa;
+  font-family: 'Consolas', monospace;
+}
+
+.wave-indicator .wave-name {
+  font-size: 0.85rem;
+  color: #fbbf24;
+  font-family: 'Consolas', monospace;
+}
+
+.wave-indicator .wave-year {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-family: 'Consolas', monospace;
+}
+
+.wave-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.timer-icon {
+  font-size: 1rem;
+}
+
+.timer-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #f59e0b;
+  font-family: 'Consolas', monospace;
+}
+
+/* Barra Principal do HUD */
+.hud-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #374151;
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.hud-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.stat-icon {
+  font-size: 0.9rem;
+}
+
+/* Barras de Status */
+.stat-bar {
+  width: 60px;
+  height: 6px;
+  background: #1f2937;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid #374151;
+}
+
+.stat-fill {
+  height: 100%;
+  transition: width 0.15s ease-out;
+}
+
+.health-fill {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
+}
+
+.server-fill {
+  background: linear-gradient(90deg, #059669, #10b981);
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+}
+
+.xp-fill {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  box-shadow: 0 0 4px rgba(167, 139, 250, 0.6);
+}
+
+.xp-bar {
+  width: 40px;
+}
+
+/* Textos do HUD */
+.stat-text {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #e5e7eb;
+  min-width: 24px;
+  text-align: right;
+  font-family: 'Consolas', monospace;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #a78bfa;
+  font-family: 'Consolas', monospace;
+}
+
+.stat-value {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fbbf24;
+  font-family: 'Consolas', monospace;
+}
+
+.hud-separator {
+  color: #4b5563;
+  font-size: 0.8rem;
+}
+
+.hud-stat.level {
+  gap: 0.25rem;
+}
+
+.hud-stat.score {
+  gap: 0.25rem;
+}
+
+.hud-stat.money {
+  gap: 0.25rem;
+}
+
+.stat-value.gold {
+  color: #fbbf24;
+  text-shadow: 0 0 4px rgba(251, 191, 36, 0.5);
+}
+
+/* OS Badge no HUD */
+.hud-stat.os-badge {
+  background: rgba(96, 165, 250, 0.15);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.os-name {
+  font-size: 0.7rem;
+  color: #60a5fa;
+}
+
+/* Apps counter */
+.hud-stat.apps {
+  gap: 0.25rem;
+}
+
+/* Botão de Pause */
+.hud-pause-btn {
+  text-align: right;
+  background: transparent;
+  border: 1px solid #4b5563;
+  color: #9ca3af;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.hud-pause-btn:hover {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+}
