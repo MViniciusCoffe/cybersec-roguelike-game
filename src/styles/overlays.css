@@ -1,0 +1,100 @@
+/* ===== OVERLAYS ===== */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--overlay-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.overlay-content {
+  text-align: center;
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--text-main);
+}
+
+.overlay-content.game-over {
+  border: 3px solid var(--enemy-color);
+}
+
+.overlay-content h2 {
+  margin-top: 0;
+}
+
+.overlay-content p {
+  margin: 0.5rem 0;
+}
+
+.final-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--enemy-color);
+  margin: 1rem 0 !important;
+}
+
+/* ===== PAUSE OVERLAY ===== */
+
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 110;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.2s ease-in;
+}
+
+.pause-content {
+  text-align: center;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f3460 100%);
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  border: 2px solid #e94560;
+  box-shadow:
+    0 0 20px rgba(233, 69, 96, 0.5),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  min-width: 300px;
+}
+
+.pause-content h2 {
+  margin-top: 0;
+  color: #facc15;
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+}
+
+.btn-resume {
+  background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+  border: 2px solid #86efac;
+  color: #000;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+}
+
+.btn-resume:hover {
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.8);
+}
+
+.btn-restart {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border: 2px solid #fca5a5;
+  color: white;
+  margin-top: 1rem;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.btn-restart:hover {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.8);
+}
