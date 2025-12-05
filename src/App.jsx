@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GAME_CONFIG } from './constants/gameConfig';
 import { useGameLoop } from './hooks/useGameLoop';
 import { useKeyboardControls } from './hooks/useKeyboardControls';
@@ -9,8 +9,7 @@ import { GameHUD } from './components/GameHUD';
 import { GameArena } from './components/GameArena';
 import { GameOverlay } from './components/GameOverlay';
 import { MainMenu } from './components/MainMenu';
-import { DifficultySelect } from './components/DifficultySelect';
-import { OSSelect } from './components/OSSelect';
+import { SystemSelect } from './components/SystemSelect';
 import { AppSelect } from './components/AppSelect';
 import './App.css';
 
@@ -33,8 +32,7 @@ const App = () => {
   const [waveTimer, setWaveTimer] = useState(60); // Timer da onda
 
   // Estados do sistema de progressão roguelike
-  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'difficulty', 'os', 'playing', 'app-select'
-  const [selectedDifficulty, setSelectedDifficulty] = useState(null);
+  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'system', 'playing', 'app-select'
   const [selectedOS, setSelectedOS] = useState(null);
   const [installedApps, setInstalledApps] = useState([]);
   const [lastCompletedWave, setLastCompletedWave] = useState(0);
@@ -79,25 +77,20 @@ const App = () => {
 
   // Handlers de progressão roguelike
   const handleStartNewRun = useCallback(() => {
-    setGamePhase('difficulty');
-  }, []);
-
-  const handleSelectDifficulty = useCallback((difficulty) => {
-    setSelectedDifficulty(difficulty);
-    setGamePhase('os');
+    setGamePhase('system');
   }, []);
 
   const handleSelectOS = useCallback((os) => {
     setSelectedOS(os);
     setInstalledApps([]);
     setLastCompletedWave(0);
-    // Inicia o jogo após selecionar o OS
-    startGameWithProgression();
   }, []);
 
-  const handleBackToDifficulty = useCallback(() => {
-    setGamePhase('difficulty');
-    setSelectedDifficulty(null);
+  const handleBackToMenu = useCallback(() => {
+    setGamePhase('menu');
+    setSelectedOS(null);
+    setInstalledApps([]);
+    setLastCompletedWave(0);
   }, []);
 
   const handleAppSelect = useCallback((app) => {
@@ -172,7 +165,7 @@ const App = () => {
     if (selectedOS) {
       startGameWithProgression();
     } else {
-      // Senão, vai para seleção de dificuldade
+      // Senão, vai para seleção de sistema
       handleStartNewRun();
     }
   }, [selectedOS, startGameWithProgression, handleStartNewRun]);
@@ -194,7 +187,6 @@ const App = () => {
     setIsGameOver(false);
     setGameOverReason(null);
     setGamePhase('menu');
-    setSelectedDifficulty(null);
     setSelectedOS(null);
     setInstalledApps([]);
     setLastCompletedWave(0);
@@ -258,7 +250,7 @@ const App = () => {
   usePauseKey(gameActive && !isPaused, pauseGame);
 
   // Sincronizar enemies com o estado do React para renderização
-  React.useEffect(() => {
+  useEffect(() => {
     if (gameActive) {
       const interval = setInterval(() => {
         setEnemies([...gameState.current.enemies]);
@@ -273,14 +265,14 @@ const App = () => {
   }, [gameActive, getCurrentWave, getWaveTimeRemaining]);
 
   // Parar o loop quando o jogo termina
-  React.useEffect(() => {
+  useEffect(() => {
     if (isGameOver) {
       stopLoop();
     }
   }, [isGameOver, stopLoop]);
 
   // Iniciar loop do jogo quando gameActive muda para true
-  React.useEffect(() => {
+  useEffect(() => {
     if (gameActive && !loopStartedRef.current) {
       loopStartedRef.current = true;
       startLoop();
@@ -289,6 +281,13 @@ const App = () => {
       stopLoop();
     }
   }, [gameActive, startLoop, stopLoop]);
+
+  // Inicia o jogo quando selecionar um OS
+  useEffect(() => {
+    if (selectedOS && gamePhase === 'system') {
+      startGameWithProgression();
+    }
+  }, [selectedOS, gamePhase, startGameWithProgression]);
 
   return (
     <div className="app-container dark">
@@ -314,22 +313,14 @@ const App = () => {
           <MainMenu onStart={handleStartNewRun} defeatedEnemies={defeatedEnemies} />
         )}
 
-        {/* Seleção de Dificuldade */}
-        {gamePhase === 'difficulty' && <DifficultySelect onSelect={handleSelectDifficulty} />}
-
         {/* Seleção de Sistema Operacional */}
-        {gamePhase === 'os' && selectedDifficulty && (
-          <OSSelect
-            difficulty={selectedDifficulty}
-            onSelect={handleSelectOS}
-            onBack={handleBackToDifficulty}
-          />
+        {gamePhase === 'system' && (
+          <SystemSelect onSelect={handleSelectOS} onBack={handleBackToMenu} />
         )}
 
         {/* Seleção de Apps (entre waves) */}
-        {gamePhase === 'app-select' && selectedOS && selectedDifficulty && (
+        {gamePhase === 'app-select' && selectedOS && (
           <AppSelect
-            difficulty={selectedDifficulty}
             selectedOS={selectedOS}
             waveNumber={lastCompletedWave}
             installedApps={installedApps}

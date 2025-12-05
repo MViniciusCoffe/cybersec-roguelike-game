@@ -1,30 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { getAvailableApps, selectRandomApps, RARITY_CONFIG } from '../constants/progressionConfig';
+import { getAvailableApps, selectRandomApps, RARITY_CONFIG } from '../constants/appsDatabase';
 
 /**
  * Componente de seleção de Apps entre waves
  * Apresenta 3 cartas de aplicativos para o jogador escolher
  */
-export const AppSelect = ({
-  difficulty,
-  selectedOS,
-  waveNumber,
-  installedApps,
-  onSelect,
-  onSkip,
-}) => {
+export const AppSelect = ({ selectedOS, waveNumber, installedApps, onSelect, onSkip }) => {
   const [selectedApp, setSelectedApp] = useState(null);
   const [isInstalling, setIsInstalling] = useState(false);
 
-  // Gera 3 apps aleatórios baseado no SO e dificuldade
+  // Gera 3 apps aleatórios baseado no SO
   const availableApps = useMemo(() => {
-    const allApps = getAvailableApps(selectedOS.id, difficulty.id);
+    const allApps = getAvailableApps(selectedOS.id);
     // Remove apps já instalados
     const notInstalled = allApps.filter(
       (app) => !installedApps.some((installed) => installed.id === app.id)
     );
     return selectRandomApps(notInstalled, 3, waveNumber);
-  }, [selectedOS, difficulty, waveNumber, installedApps]);
+  }, [selectedOS, waveNumber, installedApps]);
 
   const handleSelectApp = (app) => {
     setSelectedApp(app);
