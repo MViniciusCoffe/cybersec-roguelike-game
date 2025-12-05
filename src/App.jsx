@@ -52,6 +52,7 @@ const App = () => {
   const moneyRef = useRef([]);
   const containerRef = useRef(null);
   const loopStartedRef = useRef(false);
+  const resetLoopRef = useRef(null); // Ref para armazenar a função resetLoop
 
   // Estado do jogo (não causa re-render)
   const gameState = useRef({
@@ -226,10 +227,13 @@ const App = () => {
     setBarriers([]);
     setActiveEffects([]);
     resetWeaponSystem();
-    resetLoop(); // Reset do timer das waves para novo jogo
+    // Reset do timer das waves para novo jogo (usa ref para evitar dependência circular)
+    if (resetLoopRef.current) {
+      resetLoopRef.current();
+    }
     setGamePhase('playing');
     setGameActive(true);
-  }, [resetWeaponSystem, resetLoop]);
+  }, [resetWeaponSystem]);
 
   // Handlers
   const startGame = useCallback(() => {
@@ -346,6 +350,9 @@ const App = () => {
       handleWaveChange,
       getWeaponStats
     );
+
+  // Armazena resetLoop no ref para uso em startGameWithProgression
+  resetLoopRef.current = resetLoop;
 
   useKeyboardControls(gameState);
   useContainerSize(containerRef, gameState);
