@@ -12,6 +12,9 @@
   top: 0;
   z-index: 15;
   transform-origin: center center;
+  /* Margens para centralizar na posição de órbita */
+  margin-left: -3px;
+  margin-top: -10px;
 }
 
 .weapon .weapon-icon {

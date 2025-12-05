@@ -43,8 +43,22 @@ export const GameArena = ({
 
     switch (weapon.mechanics?.type) {
       case 'rotating':
+        // Espada digital - usa visual de lâmina (sem emoji)
+        return (
+          <div
+            ref={knifeRef}
+            className={`entity knife weapon-${weapon.id}`}
+            style={{
+              width: knifeWidth,
+              height: knifeHeight,
+              opacity: gameActive ? 1 : 0,
+              '--knife-color': tierColor,
+            }}
+          />
+        );
+
       case 'wave':
-        // Espada digital ou Antivírus - rotativa
+        // Antivírus - rotativa com ícone
         return (
           <div
             ref={knifeRef}
@@ -54,7 +68,7 @@ export const GameArena = ({
               height: knifeHeight,
               opacity: gameActive ? 1 : 0,
               '--weapon-color': tierColor,
-              '--weapon-glow': weapon.id === 'antivirus' ? '#22c55e' : tierColor,
+              '--weapon-glow': '#22c55e',
             }}
           >
             <span className="weapon-icon">{weapon.icon}</span>
