@@ -150,6 +150,8 @@ export const GAME_CONFIG = {
     a: false,
     s: false,
     d: false,
+    q: false,
+    Q: false,
     ArrowUp: false,
     ArrowLeft: false,
     ArrowDown: false,

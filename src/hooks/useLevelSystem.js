@@ -5,7 +5,7 @@ import { GAME_CONFIG } from '../constants/gameConfig';
  * Hook que gerencia o sistema de níveis
  * Calcula XP necessário, bônus por nível, etc
  */
-export const useLevelSystem = (gameState, setLevel, setCurrentXP) => {
+export const useLevelSystem = (gameState, setLevel, setCurrentXP, onLevelUp = null) => {
   /**
    * Calcula XP necessário para um nível específico
    */
@@ -69,6 +69,10 @@ export const useLevelSystem = (gameState, setLevel, setCurrentXP) => {
       // Atualiza React state
       if (newLevel !== gameLevel) {
         setLevel(newLevel);
+        // Notifica callback de level up
+        if (onLevelUp) {
+          onLevelUp(newLevel, newLevel - gameLevel);
+        }
       }
       setCurrentXP(currentXP);
 

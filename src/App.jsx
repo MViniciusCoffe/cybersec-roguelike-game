@@ -34,10 +34,11 @@ const App = () => {
   const [waveTimer, setWaveTimer] = useState(60); // Timer da onda
 
   // Estados do sistema de progressão roguelike
-  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'system', 'playing', 'app-select', 'weapon-select'
+  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'system', 'playing', 'app-select', 'weapon-select', 'level-up'
   const [selectedOS, setSelectedOS] = useState(null);
   const [installedApps, setInstalledApps] = useState([]);
   const [lastCompletedWave, setLastCompletedWave] = useState(0);
+  const [pendingLevelUps, setPendingLevelUps] = useState(0); // Quantos level ups pendentes para escolher upgrade
 
   // Estados do sistema de armas
   const [projectiles, setProjectiles] = useState([]);
@@ -300,8 +301,22 @@ const App = () => {
     [lastCompletedWave]
   );
 
+  // Callback para level up - mostra seleção de upgrades
+  const handleLevelUp = useCallback((newLevel, levelsGained) => {
+    console.log(`Level up! Novo nível: ${newLevel}, ganhou ${levelsGained} níveis`);
+    setPendingLevelUps((prev) => prev + levelsGained);
+    // Pausa o jogo para selecionar upgrade
+    setGameActive(false);
+    setGamePhase('level-up');
+  }, []);
+
   // Custom Hooks
-  const { getLevelStats, addXP, getXPDisplay } = useLevelSystem(gameState, setLevel, setCurrentXP);
+  const { getLevelStats, addXP, getXPDisplay } = useLevelSystem(
+    gameState,
+    setLevel,
+    setCurrentXP,
+    handleLevelUp
+  );
 
   const { startLoop, stopLoop, getCurrentWave, getWaveNumber, getWaveTimeRemaining } = useGameLoop(
     gameState,
@@ -370,6 +385,52 @@ const App = () => {
     }
   }, [selectedOS, gamePhase, startGameWithProgression]);
 
+  // Listener para tecla Q (habilidade especial)
+  useEffect(() => {
+    const handleSpecialKey = () => {
+      if (gameActive && !isPaused && (gameState.current.keys.q || gameState.current.keys.Q)) {
+        handleUseSpecial();
+        // Reset para não disparar múltiplas vezes
+        gameState.current.keys.q = false;
+        gameState.current.keys.Q = false;
+      }
+    };
+
+    if (gameActive) {
+      const interval = setInterval(handleSpecialKey, 100);
+      return () => clearInterval(interval);
+    }
+  }, [gameActive, isPaused, handleUseSpecial]);
+
+  // Handler para selecionar upgrade ao subir de nível
+  const handleLevelUpUpgrade = useCallback(
+    (upgrade) => {
+      addUpgrade(upgrade);
+      setPendingLevelUps((prev) => {
+        const remaining = prev - 1;
+        if (remaining <= 0) {
+          // Todos os level ups processados, volta ao jogo
+          setGamePhase('playing');
+          setGameActive(true);
+        }
+        return remaining;
+      });
+    },
+    [addUpgrade]
+  );
+
+  const handleSkipLevelUpUpgrade = useCallback(() => {
+    setPendingLevelUps((prev) => {
+      const remaining = prev - 1;
+      if (remaining <= 0) {
+        // Todos os level ups processados, volta ao jogo
+        setGamePhase('playing');
+        setGameActive(true);
+      }
+      return remaining;
+    });
+  }, []);
+
   return (
     <div className="app-container dark">
       <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
@@ -426,6 +487,23 @@ const App = () => {
             onSelectWeapon={handleSelectWeapon}
             onSelectUpgrade={handleSelectUpgrade}
             onSkip={handleSkipWeapon}
+          />
+        )}
+
+        {/* Seleção de Upgrade ao subir de nível */}
+        {gamePhase === 'level-up' && selectedOS && (
+          <WeaponSelect
+            currentWeapon={currentWeapon}
+            currentTier={weaponTier}
+            weaponOptions={[]} // Não oferece novas armas no level up
+            upgradeOptions={getUpgradeOptions(level)}
+            selectedOS={selectedOS}
+            waveNumber={level}
+            onSelectWeapon={() => {}}
+            onSelectUpgrade={handleLevelUpUpgrade}
+            onSkip={handleSkipLevelUpUpgrade}
+            isLevelUp={true}
+            pendingLevelUps={pendingLevelUps}
           />
         )}
 

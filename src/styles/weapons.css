@@ -7,6 +7,11 @@
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 15;
+  transform-origin: center center;
 }
 
 .weapon .weapon-icon {
@@ -24,6 +29,16 @@
     #64748b 100%
   );
   box-shadow: 0 0 10px var(--weapon-glow, var(--weapon-color, #a78bfa));
+  margin-left: -4px;
+  margin-top: -12.5px;
+}
+
+.weapon-digital_sword .weapon-icon {
+  font-size: 1rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Antivírus - Onda de varredura */

@@ -15,9 +15,11 @@ export const WeaponSelect = ({
   onSelectWeapon,
   onSelectUpgrade,
   onSkip,
+  isLevelUp = false,
+  pendingLevelUps = 0,
 }) => {
   const [selectedOption, setSelectedOption] = useState(null);
-  const [viewMode, setViewMode] = useState('weapons'); // 'weapons' ou 'upgrades'
+  const [viewMode, setViewMode] = useState(isLevelUp ? 'upgrades' : 'weapons'); // 'weapons' ou 'upgrades'
 
   // Obter cor do tier
   const tierInfo = WEAPON_TIERS[currentTier] || WEAPON_TIERS.BASIC;
@@ -55,8 +57,12 @@ export const WeaponSelect = ({
       <div className="weapon-select-container">
         <div className="weapon-select-header">
           <div className="wave-complete-badge">
-            <span className="wave-icon">🎉</span>
-            <h1>Wave {waveNumber} Completa!</h1>
+            <span className="wave-icon">{isLevelUp ? '⬆️' : '🎉'}</span>
+            <h1>
+              {isLevelUp
+                ? `Level Up! (${pendingLevelUps} restantes)`
+                : `Wave ${waveNumber} Completa!`}
+            </h1>
           </div>
 
           <div className="current-weapon-display">
@@ -72,21 +78,23 @@ export const WeaponSelect = ({
           <p className="weapon-select-subtitle">Escolha uma melhoria para continuar</p>
         </div>
 
-        {/* Tabs */}
-        <div className="weapon-tabs">
-          <button
-            className={`weapon-tab ${viewMode === 'weapons' ? 'active' : ''}`}
-            onClick={() => setViewMode('weapons')}
-          >
-            ⚔️ Armas ({weaponOptions?.length || 0})
-          </button>
-          <button
-            className={`weapon-tab ${viewMode === 'upgrades' ? 'active' : ''}`}
-            onClick={() => setViewMode('upgrades')}
-          >
-            ⬆️ Upgrades ({upgradeOptions?.length || 0})
-          </button>
-        </div>
+        {/* Tabs - Esconde a tab de armas no level up */}
+        {!isLevelUp && (
+          <div className="weapon-tabs">
+            <button
+              className={`weapon-tab ${viewMode === 'weapons' ? 'active' : ''}`}
+              onClick={() => setViewMode('weapons')}
+            >
+              ⚔️ Armas ({weaponOptions?.length || 0})
+            </button>
+            <button
+              className={`weapon-tab ${viewMode === 'upgrades' ? 'active' : ''}`}
+              onClick={() => setViewMode('upgrades')}
+            >
+              ⬆️ Upgrades ({upgradeOptions?.length || 0})
+            </button>
+          </div>
+        )}
 
         {/* Conteúdo baseado na tab */}
         {viewMode === 'weapons' && (
