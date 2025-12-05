@@ -677,9 +677,10 @@ export function getAvailableWeapons(currentWeapon, waveNumber, luck = 1.0) {
 // Função para obter upgrades disponíveis para uma arma
 export function getAvailableUpgrades(weapon, currentTier, waveNumber, luck = 1.0) {
   const upgrades = [];
+  const allUniversalUpgrades = Object.values(UNIVERSAL_UPGRADES);
 
-  // Upgrades universais
-  Object.values(UNIVERSAL_UPGRADES).forEach((upgrade) => {
+  // Primeiro, adiciona upgrades com base em chance
+  allUniversalUpgrades.forEach((upgrade) => {
     const rarityChance = {
       common: 0.6,
       uncommon: 0.35,
@@ -693,7 +694,7 @@ export function getAvailableUpgrades(weapon, currentTier, waveNumber, luck = 1.0
   });
 
   // Upgrades específicos da arma
-  if (weapon.upgrades) {
+  if (weapon && weapon.upgrades) {
     weapon.upgrades.forEach((upgrade) => {
       if (upgrade.tier <= currentTier + 1) {
         if (Math.random() * luck < 0.4) {
@@ -703,10 +704,23 @@ export function getAvailableUpgrades(weapon, currentTier, waveNumber, luck = 1.0
     });
   }
 
-  // Limita a 3-4 opções
-  return upgrades
-    .sort(() => Math.random() - 0.5)
-    .slice(0, Math.min(3 + Math.floor(waveNumber / 2), 4));
+  // GARANTE pelo menos 3 upgrades - preenche com upgrades universais aleatórios
+  const minUpgrades = 3;
+  if (upgrades.length < minUpgrades) {
+    // Pega upgrades universais que ainda não foram adicionados
+    const existingIds = new Set(upgrades.map((u) => u.id));
+    const availableToAdd = allUniversalUpgrades.filter((u) => !existingIds.has(u.id));
+
+    // Embaralha e adiciona até ter 3
+    const shuffled = availableToAdd.sort(() => Math.random() - 0.5);
+    for (let i = 0; i < shuffled.length && upgrades.length < minUpgrades; i++) {
+      upgrades.push({ ...shuffled[i], source: 'universal' });
+    }
+  }
+
+  // Limita a 3-4 opções (embaralha primeiro para variedade)
+  const maxUpgrades = Math.min(3 + Math.floor(waveNumber / 2), 4);
+  return upgrades.sort(() => Math.random() - 0.5).slice(0, maxUpgrades);
 }
 
 // Modificações de crítico por tipo de arma

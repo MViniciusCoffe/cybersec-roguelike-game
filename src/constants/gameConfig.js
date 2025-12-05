@@ -14,7 +14,7 @@ export const GAME_CONFIG = {
     MAX_ENEMIES: 50, // Máximo de inimigos na tela
     HEALTH: 3, // Vida de cada inimigo
     MAX_HEALTH: 3, // Vida máxima (para referência)
-    DAMAGE: 95, // Dano que causa ao jogador
+    DAMAGE: 20, // Dano que causa ao jogador
     DATACENTER_DAMAGE: 25, // Dano que causa ao data center
   },
   KNIFE: {
@@ -39,7 +39,7 @@ export const GAME_CONFIG = {
     COLLECTION_RADIUS: 50, // Raio de coleta automática
   },
   LEVEL: {
-    BASE_XP_REQUIRED: 100, // XP necessário para level 1
+    BASE_XP_REQUIRED: 10, // XP necessário para level 1
     XP_MULTIPLIER: 1.5, // Multiplicador de XP por nível (cresce exponencialmente)
     KNIFE_DAMAGE_BONUS: 0.5, // +0.5 de dano por nível (ex: level 5 = +2.5 dano)
     KNIFE_COOLDOWN_REDUCTION: 10, // -10ms de cooldown por nível

@@ -226,9 +226,10 @@ const App = () => {
     setBarriers([]);
     setActiveEffects([]);
     resetWeaponSystem();
+    resetLoop(); // Reset do timer das waves para novo jogo
     setGamePhase('playing');
     setGameActive(true);
-  }, [resetWeaponSystem]);
+  }, [resetWeaponSystem, resetLoop]);
 
   // Handlers
   const startGame = useCallback(() => {
@@ -318,26 +319,33 @@ const App = () => {
     handleLevelUp
   );
 
-  const { startLoop, stopLoop, getCurrentWave, getWaveNumber, getWaveTimeRemaining } = useGameLoop(
-    gameState,
-    playerRef,
-    knifeRef,
-    enemiesRef,
-    setScore,
-    setHealth,
-    setDatacenterHealth,
-    setMoney,
-    setEnemies,
-    addXP,
-    getLevelStats,
-    (reason) => {
-      setGameActive(false);
-      setGameOverReason(reason);
-      setIsGameOver(true);
-    },
-    handleEnemyDefeated,
-    handleWaveChange
-  );
+  // Função para obter stats atuais da arma (para o sistema de colisão)
+  const getWeaponStats = useCallback(() => {
+    return weaponSystem.weaponStats;
+  }, [weaponSystem.weaponStats]);
+
+  const { startLoop, stopLoop, resetLoop, getCurrentWave, getWaveNumber, getWaveTimeRemaining } =
+    useGameLoop(
+      gameState,
+      playerRef,
+      knifeRef,
+      enemiesRef,
+      setScore,
+      setHealth,
+      setDatacenterHealth,
+      setMoney,
+      setEnemies,
+      addXP,
+      getLevelStats,
+      (reason) => {
+        setGameActive(false);
+        setGameOverReason(reason);
+        setIsGameOver(true);
+      },
+      handleEnemyDefeated,
+      handleWaveChange,
+      getWeaponStats
+    );
 
   useKeyboardControls(gameState);
   useContainerSize(containerRef, gameState);

@@ -9,39 +9,47 @@ export const useEnemySpawner = (gameState, setEnemies, onWaveChange) => {
   const lastSpawnTime = useRef(0);
   const gameStartTime = useRef(0);
   const currentWaveRef = useRef(0);
+  const pausedTimeRef = useRef(0); // Tempo total que o jogo ficou pausado
+  const pauseStartRef = useRef(0); // Quando a pausa começou
+
+  // Retorna tempo de jogo efetivo (desconta pausas)
+  const getEffectiveGameTime = useCallback(() => {
+    if (gameStartTime.current === 0) return 0;
+    return performance.now() - gameStartTime.current - pausedTimeRef.current;
+  }, []);
 
   // Retorna a onda atual baseada no tempo de jogo
   const getCurrentWave = useCallback(() => {
-    if (gameStartTime.current === 0) return GAME_CONFIG.WAVES.DEFINITIONS[0];
+    const effectiveTime = getEffectiveGameTime();
+    if (effectiveTime <= 0) return GAME_CONFIG.WAVES.DEFINITIONS[0];
 
-    const elapsedTime = performance.now() - gameStartTime.current;
-    const waveIndex = Math.floor(elapsedTime / GAME_CONFIG.WAVES.DURATION);
+    const waveIndex = Math.floor(effectiveTime / GAME_CONFIG.WAVES.DURATION);
     const maxWaveIndex = GAME_CONFIG.WAVES.DEFINITIONS.length - 1;
 
     return GAME_CONFIG.WAVES.DEFINITIONS[Math.min(waveIndex, maxWaveIndex)];
-  }, []);
+  }, [getEffectiveGameTime]);
 
   // Retorna o número da onda atual (1-indexed)
   const getWaveNumber = useCallback(() => {
-    if (gameStartTime.current === 0) return 1;
+    const effectiveTime = getEffectiveGameTime();
+    if (effectiveTime <= 0) return 1;
 
-    const elapsedTime = performance.now() - gameStartTime.current;
-    const waveNumber = Math.floor(elapsedTime / GAME_CONFIG.WAVES.DURATION) + 1;
+    const waveNumber = Math.floor(effectiveTime / GAME_CONFIG.WAVES.DURATION) + 1;
     const maxWaves = GAME_CONFIG.WAVES.DEFINITIONS.length;
 
     return Math.min(waveNumber, maxWaves);
-  }, []);
+  }, [getEffectiveGameTime]);
 
   // Retorna tempo restante na onda atual (em segundos)
   const getWaveTimeRemaining = useCallback(() => {
-    if (gameStartTime.current === 0) return GAME_CONFIG.WAVES.DURATION / 1000;
+    const effectiveTime = getEffectiveGameTime();
+    if (effectiveTime <= 0) return GAME_CONFIG.WAVES.DURATION / 1000;
 
-    const elapsedTime = performance.now() - gameStartTime.current;
-    const timeInCurrentWave = elapsedTime % GAME_CONFIG.WAVES.DURATION;
+    const timeInCurrentWave = effectiveTime % GAME_CONFIG.WAVES.DURATION;
     const remaining = GAME_CONFIG.WAVES.DURATION - timeInCurrentWave;
 
     return Math.ceil(remaining / 1000);
-  }, []);
+  }, [getEffectiveGameTime]);
 
   // Retorna stats do inimigo baseado na onda atual
   const getWaveEnemyStats = useCallback(() => {
@@ -153,12 +161,31 @@ export const useEnemySpawner = (gameState, setEnemies, onWaveChange) => {
     lastSpawnTime.current = performance.now();
     gameStartTime.current = performance.now();
     currentWaveRef.current = 0;
+    pausedTimeRef.current = 0;
+    pauseStartRef.current = 0;
+  }, []);
+
+  // Pausar o timer (chamado quando o jogo pausa)
+  const pauseTimer = useCallback(() => {
+    if (pauseStartRef.current === 0) {
+      pauseStartRef.current = performance.now();
+    }
+  }, []);
+
+  // Resumir o timer (chamado quando o jogo despausa)
+  const resumeTimer = useCallback(() => {
+    if (pauseStartRef.current > 0) {
+      pausedTimeRef.current += performance.now() - pauseStartRef.current;
+      pauseStartRef.current = 0;
+    }
   }, []);
 
   return {
     spawnEnemy,
     checkAndSpawn,
     resetSpawnTime,
+    pauseTimer,
+    resumeTimer,
     getCurrentWave,
     getWaveNumber,
     getWaveTimeRemaining,

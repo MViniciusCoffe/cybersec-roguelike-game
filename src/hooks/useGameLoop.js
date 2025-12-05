@@ -23,13 +23,22 @@ export const useGameLoop = (
   getLevelStats,
   onGameOver,
   onEnemyDefeated,
-  onWaveChange // Callback para notificar mudança de onda
+  onWaveChange, // Callback para notificar mudança de onda
+  getWeaponStats // Função para obter stats da arma atual
 ) => {
   const requestRef = useRef();
+  const isRunningRef = useRef(false);
 
   // Inicializa subsistemas
-  const { checkAndSpawn, resetSpawnTime, getCurrentWave, getWaveNumber, getWaveTimeRemaining } =
-    useEnemySpawner(gameState, setEnemies, onWaveChange);
+  const {
+    checkAndSpawn,
+    resetSpawnTime,
+    pauseTimer,
+    resumeTimer,
+    getCurrentWave,
+    getWaveNumber,
+    getWaveTimeRemaining,
+  } = useEnemySpawner(gameState, setEnemies, onWaveChange);
   const { handleAllCollisions } = useCollisionDetection(
     gameState,
     setScore,
@@ -39,7 +48,8 @@ export const useGameLoop = (
     addXP,
     getLevelStats,
     onGameOver,
-    onEnemyDefeated
+    onEnemyDefeated,
+    getWeaponStats
   );
   const { updatePlayerMovement, updateKnifeMovement, updateAllEnemyMovement } =
     useMovementSystem(gameState);
@@ -91,17 +101,32 @@ export const useGameLoop = (
   );
 
   const startLoop = useCallback(() => {
-    resetSpawnTime();
+    // Só reseta o timer se é um novo jogo (não está rodando)
+    if (!isRunningRef.current) {
+      resetSpawnTime();
+    } else {
+      // Se já estava rodando, é um resume - não reseta
+      resumeTimer();
+    }
+    isRunningRef.current = true;
     requestRef.current = requestAnimationFrame(updateGame);
-  }, [updateGame, resetSpawnTime]);
+  }, [updateGame, resetSpawnTime, resumeTimer]);
 
   const stopLoop = useCallback(() => {
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
-  }, []);
+    pauseTimer();
+  }, [pauseTimer]);
+
+  // Reset completo para novo jogo
+  const resetLoop = useCallback(() => {
+    isRunningRef.current = false;
+    resetSpawnTime();
+  }, [resetSpawnTime]);
 
   return {
     startLoop,
     stopLoop,
+    resetLoop,
     getCurrentWave,
     getWaveNumber,
     getWaveTimeRemaining,

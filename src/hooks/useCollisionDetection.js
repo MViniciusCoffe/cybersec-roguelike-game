@@ -15,7 +15,8 @@ export const useCollisionDetection = (
   addXP,
   getLevelStats,
   onGameOver,
-  onEnemyDefeated // Callback para notificar quando um inimigo é derrotado
+  onEnemyDefeated, // Callback para notificar quando um inimigo é derrotado
+  getWeaponStats // Função para obter stats da arma atual
 ) => {
   /**
    * Verifica colisões do player com inimigos
@@ -79,6 +80,20 @@ export const useCollisionDetection = (
       // Obtém os bônus do nível atual
       const levelStats = getLevelStats(currentLevel);
 
+      // Obtém stats da arma (inclui upgrades)
+      const weaponStats = getWeaponStats ? getWeaponStats() : null;
+
+      // Calcula dano efetivo: base + level bonus + weapon stats
+      let effectiveDamage = levelStats.effectiveKnifeDamage;
+      let effectiveCritChance = 0.1; // 10% base
+      let effectiveCritMultiplier = 2.0; // 2x base
+
+      if (weaponStats) {
+        effectiveDamage = weaponStats.damage || effectiveDamage;
+        effectiveCritChance = weaponStats.critChance || effectiveCritChance;
+        effectiveCritMultiplier = weaponStats.critMultiplier || effectiveCritMultiplier;
+      }
+
       enemies.forEach((enemy, index) => {
         const enemyCenterX = enemy.x + enemy.size / 2;
         const enemyCenterY = enemy.y + enemy.size / 2;
@@ -97,8 +112,15 @@ export const useCollisionDetection = (
 
           // Respeita o cooldown de dano (reduzido por nível)
           if (now - enemy.lastDamageTime > levelStats.effectiveKnifeCooldown) {
-            // Dano aumenta com o nível
-            enemy.health -= levelStats.effectiveKnifeDamage;
+            // Verifica crítico
+            const isCritical = Math.random() < effectiveCritChance;
+            let damageDealt = effectiveDamage;
+
+            if (isCritical) {
+              damageDealt *= effectiveCritMultiplier;
+            }
+
+            enemy.health -= damageDealt;
             enemy.lastDamageTime = now;
 
             // Se morreu, marca para remover
@@ -114,14 +136,24 @@ export const useCollisionDetection = (
               // Ganha XP ao matar inimigo
               addXP(25);
 
-              // 10% de chance de dropar moeda
-              if (Math.random() < GAME_CONFIG.MONEY.DROP_CHANCE) {
+              // Chance de dropar moeda (pode ser aumentada por upgrades)
+              const dropChance = weaponStats?.moneyDropBonus
+                ? GAME_CONFIG.MONEY.DROP_CHANCE * weaponStats.moneyDropBonus
+                : GAME_CONFIG.MONEY.DROP_CHANCE;
+
+              if (Math.random() < dropChance) {
                 gameState.current.moneyDrops.push({
                   id: Date.now() + Math.random(),
                   x: enemyCenterX,
                   y: enemyCenterY,
                   value: GAME_CONFIG.MONEY.VALUE,
                 });
+              }
+
+              // Lifesteal (roubo de vida) se tiver upgrade
+              if (weaponStats?.lifesteal && weaponStats.lifesteal > 0) {
+                const _healAmount = Math.ceil(damageDealt * weaponStats.lifesteal);
+                // TODO: Implementar heal via callback quando setHealth for passado
               }
             }
           }
@@ -130,7 +162,7 @@ export const useCollisionDetection = (
 
       return enemiesToRemove;
     },
-    [gameState, setScore, addXP, getLevelStats, onEnemyDefeated]
+    [gameState, setScore, addXP, getLevelStats, onEnemyDefeated, getWeaponStats]
   );
 
   /**
