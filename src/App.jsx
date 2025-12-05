@@ -5,12 +5,14 @@ import { useKeyboardControls } from './hooks/useKeyboardControls';
 import { useContainerSize } from './hooks/useContainerSize';
 import { usePauseKey } from './hooks/usePauseKey';
 import { useLevelSystem } from './hooks/useLevelSystem';
+import { useWeaponSystem } from './hooks/useWeaponSystem';
 import { GameHUD } from './components/GameHUD';
 import { GameArena } from './components/GameArena';
 import { GameOverlay } from './components/GameOverlay';
 import { MainMenu } from './components/MainMenu';
 import { SystemSelect } from './components/SystemSelect';
 import { AppSelect } from './components/AppSelect';
+import { WeaponSelect } from './components/WeaponSelect';
 import './App.css';
 
 const App = () => {
@@ -32,10 +34,15 @@ const App = () => {
   const [waveTimer, setWaveTimer] = useState(60); // Timer da onda
 
   // Estados do sistema de progressão roguelike
-  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'system', 'playing', 'app-select'
+  const [gamePhase, setGamePhase] = useState('menu'); // 'menu', 'system', 'playing', 'app-select', 'weapon-select'
   const [selectedOS, setSelectedOS] = useState(null);
   const [installedApps, setInstalledApps] = useState([]);
   const [lastCompletedWave, setLastCompletedWave] = useState(0);
+
+  // Estados do sistema de armas
+  const [projectiles, setProjectiles] = useState([]);
+  const [barriers, setBarriers] = useState([]);
+  const [activeEffects, setActiveEffects] = useState([]);
 
   // Refs para manipulação DOM
   const playerRef = useRef(null);
@@ -75,6 +82,22 @@ const App = () => {
     container: { width: 0, height: 0 },
   });
 
+  // Sistema de armas
+  const weaponSystem = useWeaponSystem(selectedOS, installedApps);
+  const {
+    currentWeapon,
+    weaponTier,
+    switchWeapon,
+    upgradeTier,
+    addUpgrade,
+    useSpecial,
+    getActiveBarriers,
+    getWeaponOptions,
+    getUpgradeOptions,
+    getWeaponInfo,
+    resetWeaponSystem,
+  } = weaponSystem;
+
   // Handlers de progressão roguelike
   const handleStartNewRun = useCallback(() => {
     setGamePhase('system');
@@ -105,6 +128,49 @@ const App = () => {
     setGamePhase('playing');
     setGameActive(true);
   }, []);
+
+  // Handlers para seleção de armas
+  const handleSelectWeapon = useCallback(
+    (option) => {
+      if (option.type === 'upgrade') {
+        // Evoluir tier da arma atual
+        upgradeTier();
+      } else if (option.type === 'new' || option.type === 'hybrid') {
+        // Trocar para nova arma
+        switchWeapon(option.weapon);
+      }
+      // Continua o jogo
+      setGamePhase('playing');
+      setGameActive(true);
+    },
+    [upgradeTier, switchWeapon]
+  );
+
+  const handleSelectUpgrade = useCallback(
+    (upgrade) => {
+      addUpgrade(upgrade);
+      // Continua o jogo
+      setGamePhase('playing');
+      setGameActive(true);
+    },
+    [addUpgrade]
+  );
+
+  const handleSkipWeapon = useCallback(() => {
+    // Continua sem melhoria de arma
+    setGamePhase('playing');
+    setGameActive(true);
+  }, []);
+
+  // Handler para usar habilidade especial
+  const handleUseSpecial = useCallback(() => {
+    const result = useSpecial();
+    if (result.success) {
+      // Aplicar efeito especial baseado na arma
+      console.log('Habilidade especial ativada:', result.effect);
+      // TODO: Integrar com o game loop para aplicar efeitos
+    }
+  }, [useSpecial]);
 
   // Função para iniciar o jogo com as configurações de progressão
   const startGameWithProgression = useCallback(() => {
@@ -155,9 +221,13 @@ const App = () => {
     gameState.current.enemies = [];
     gameState.current.moneyDrops = [];
     setEnemies([]);
+    setProjectiles([]);
+    setBarriers([]);
+    setActiveEffects([]);
+    resetWeaponSystem();
     setGamePhase('playing');
     setGameActive(true);
-  }, []);
+  }, [resetWeaponSystem]);
 
   // Handlers
   const startGame = useCallback(() => {
@@ -190,8 +260,12 @@ const App = () => {
     setSelectedOS(null);
     setInstalledApps([]);
     setLastCompletedWave(0);
+    setProjectiles([]);
+    setBarriers([]);
+    setActiveEffects([]);
+    resetWeaponSystem();
     loopStartedRef.current = false;
-  }, []);
+  }, [resetWeaponSystem]);
 
   // Callback para registrar inimigos derrotados no bestiário
   const handleEnemyDefeated = useCallback((malwareType) => {
@@ -201,18 +275,23 @@ const App = () => {
     });
   }, []);
 
-  // Callback para mudança de onda - mostra seleção de apps
+  // Callback para mudança de onda - mostra seleção de apps/armas
   const handleWaveChange = useCallback(
     (wave) => {
       const newWaveNumber = wave?.id || 1;
       setCurrentWave(wave);
 
-      // Se mudou de onda e não é a primeira, mostra seleção de apps
+      // Se mudou de onda e não é a primeira, mostra seleção de melhorias
       if (newWaveNumber > lastCompletedWave && lastCompletedWave > 0) {
         setLastCompletedWave(newWaveNumber - 1);
-        // Pausa o jogo para selecionar app
+        // Pausa o jogo para selecionar melhoria
         setGameActive(false);
-        setGamePhase('app-select');
+        // Alterna entre seleção de app e arma
+        if (lastCompletedWave % 2 === 0) {
+          setGamePhase('weapon-select');
+        } else {
+          setGamePhase('app-select');
+        }
       } else if (lastCompletedWave === 0 && newWaveNumber === 1) {
         // Primeira wave
         setLastCompletedWave(1);
@@ -258,11 +337,13 @@ const App = () => {
         // Atualiza informações da onda
         setCurrentWave(getCurrentWave());
         setWaveTimer(getWaveTimeRemaining());
+        // Atualiza barreiras ativas
+        setBarriers(getActiveBarriers());
       }, 16); // ~60 FPS
 
       return () => clearInterval(interval);
     }
-  }, [gameActive, getCurrentWave, getWaveTimeRemaining]);
+  }, [gameActive, getCurrentWave, getWaveTimeRemaining, getActiveBarriers]);
 
   // Parar o loop quando o jogo termina
   useEffect(() => {
@@ -306,6 +387,10 @@ const App = () => {
           enemies={enemies}
           moneyDrops={moneyDrops}
           gameState={gameState}
+          weaponInfo={getWeaponInfo()}
+          projectiles={projectiles}
+          barriers={barriers}
+          activeEffects={activeEffects}
         />
 
         {/* Menu Principal */}
@@ -326,6 +411,21 @@ const App = () => {
             installedApps={installedApps}
             onSelect={handleAppSelect}
             onSkip={handleSkipApp}
+          />
+        )}
+
+        {/* Seleção de Armas (entre waves) */}
+        {gamePhase === 'weapon-select' && selectedOS && (
+          <WeaponSelect
+            currentWeapon={currentWeapon}
+            currentTier={weaponTier}
+            weaponOptions={getWeaponOptions(lastCompletedWave)}
+            upgradeOptions={getUpgradeOptions(lastCompletedWave)}
+            selectedOS={selectedOS}
+            waveNumber={lastCompletedWave}
+            onSelectWeapon={handleSelectWeapon}
+            onSelectUpgrade={handleSelectUpgrade}
+            onSkip={handleSkipWeapon}
           />
         )}
 
@@ -371,6 +471,8 @@ const App = () => {
           waveNumber={getWaveNumber()}
           selectedOS={selectedOS}
           installedApps={installedApps}
+          weaponInfo={getWeaponInfo()}
+          onUseSpecial={handleUseSpecial}
         />
       </div>
     </div>

@@ -16,12 +16,22 @@ export const GameHUD = ({
   waveNumber,
   selectedOS,
   installedApps = [],
+  weaponInfo,
+  onUseSpecial,
 }) => {
   // Formata o timer em MM:SS
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Calcula cooldown restante como porcentagem
+  const getSpecialCooldownPercent = () => {
+    if (!weaponInfo?.special) return 0;
+    const { cooldownRemaining, cooldownTotal } = weaponInfo.special;
+    if (cooldownTotal === 0) return 0;
+    return Math.round((cooldownRemaining / cooldownTotal) * 100);
   };
 
   return (
@@ -50,6 +60,46 @@ export const GameHUD = ({
               <span className="stat-icon">{selectedOS.icon}</span>
               <span className="stat-label os-name">{selectedOS.name}</span>
             </div>
+            <div className="hud-separator">|</div>
+          </>
+        )}
+
+        {/* Arma Atual */}
+        {weaponInfo && (
+          <>
+            <div
+              className="hud-stat weapon-display"
+              title={`${weaponInfo.weapon.name} (${weaponInfo.tier?.name})`}
+              style={{ '--tier-color': weaponInfo.tier?.color }}
+            >
+              <span className="weapon-icon">{weaponInfo.weapon.icon}</span>
+              <div className="weapon-info-compact">
+                <span className="weapon-name">{weaponInfo.weapon.name}</span>
+                <span className="weapon-tier" style={{ color: weaponInfo.tier?.color }}>
+                  {weaponInfo.tier?.name}
+                </span>
+              </div>
+            </div>
+
+            {/* Habilidade Especial */}
+            {weaponInfo.special && (
+              <button
+                className={`special-ability-btn ${weaponInfo.special.isReady ? 'ready' : 'cooldown'}`}
+                onClick={onUseSpecial}
+                disabled={!weaponInfo.special.isReady}
+                title={`${weaponInfo.special.name}: ${weaponInfo.special.description}`}
+              >
+                <span className="special-icon">⭐</span>
+                {!weaponInfo.special.isReady && (
+                  <div
+                    className="cooldown-overlay"
+                    style={{ height: `${getSpecialCooldownPercent()}%` }}
+                  />
+                )}
+                <span className="special-key">Q</span>
+              </button>
+            )}
+
             <div className="hud-separator">|</div>
           </>
         )}
@@ -102,6 +152,20 @@ export const GameHUD = ({
           <span className="stat-value gold">{money}</span>
         </div>
 
+        {/* Upgrades de arma */}
+        {weaponInfo?.upgrades?.length > 0 && (
+          <>
+            <div className="hud-separator">|</div>
+            <div
+              className="hud-stat upgrades"
+              title={`${weaponInfo.upgrades.length} upgrades ativos`}
+            >
+              <span className="stat-icon">⬆️</span>
+              <span className="stat-value">{weaponInfo.upgrades.length}</span>
+            </div>
+          </>
+        )}
+
         {/* Apps instalados */}
         {installedApps.length > 0 && (
           <>
@@ -120,6 +184,14 @@ export const GameHUD = ({
           </button>
         )}
       </div>
+
+      {/* Efeito de Sinergia */}
+      {weaponInfo?.synergyEffect && gameActive && (
+        <div className="synergy-indicator">
+          <span className="synergy-icon">{selectedOS?.icon}</span>
+          <span className="synergy-text">{weaponInfo.synergyEffect}</span>
+        </div>
+      )}
     </div>
   );
 };
